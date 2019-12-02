@@ -11,7 +11,6 @@ module "networking" {
     subnet3_add_prefix = var.subnet3_add_prefix
 
 }
-
-
-
-
+module "application"{
+   source = "../modules/application"
+}
