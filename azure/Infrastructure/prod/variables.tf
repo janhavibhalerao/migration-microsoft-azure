@@ -19,17 +19,17 @@ variable "add_space" {
 variable "subnet3_add_prefix" {
   description = "Enter a valid subnet address prefix. Example (10.x.x.x/24) "
   type = string
-  default = "10.0.0.3/24"
+  default = "10.0.3.0/24"
 }
 
 variable "subnet2_add_prefix" {
   description = "Enter a valid subnet address prefix. Example (10.x.x.x/24) "
   type = string
-  default = "10.0.0.2/24"
+  default = "10.0.2.0/24"
 }
 
 variable "subnet1_add_prefix" {
   description = "Enter a valid subnet address prefix. Example (10.x.x.x/24) "
   type = string
-  default = "10.0.0.1/24"
+  default = "10.0.1.0/24"
 }
