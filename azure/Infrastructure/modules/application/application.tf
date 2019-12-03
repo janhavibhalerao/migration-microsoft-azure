@@ -4,6 +4,11 @@ resource "azurerm_resource_group" "rg" {
   location = "East US"
 }
 
+resource "random_integer" "ri" {
+  min = 10000
+  max = 99999
+}
+
 # Storage for images - Storage blob
 resource "azurerm_storage_account" "sa" {
   name                     = "projectstoracc"
@@ -33,7 +38,7 @@ resource "azurerm_storage_blob" "object-storage" {
 
 # Storage for data - MySQL
 resource "azurerm_mysql_server" "mysql-server-demo" {
-  name                = "mysql-server-1"
+  name                = "mysqlserver-${random_integer.ri.result}"
   location            = "${azurerm_resource_group.rg.location}"
   resource_group_name = "${azurerm_resource_group.rg.name}"
 
@@ -50,7 +55,7 @@ resource "azurerm_mysql_server" "mysql-server-demo" {
     geo_redundant_backup  = "Disabled"
   }
 
-  administrator_login          = "mysqladmin"
+  administrator_login          = "mysqladminun"
   administrator_login_password = "Admin@123"
   version                      = "5.7"
   ssl_enforcement              = "Enabled"
@@ -65,13 +70,8 @@ resource "azurerm_mysql_database" "mysql-db" {
 }
 
 # Storage for token - CosmosDB
-resource "random_integer" "ri" {
-  min = 10000
-  max = 99999
-}
-
 resource "azurerm_cosmosdb_account" "cosmos-db" {
-    name                = "token-cosmos-db"
+    name                = "tfex-cosmos-db-${random_integer.ri.result}"
     location            = "${azurerm_resource_group.rg.location}"
     resource_group_name = "${azurerm_resource_group.rg.name}"
     offer_type          = "Standard"
@@ -81,12 +81,12 @@ resource "azurerm_cosmosdb_account" "cosmos-db" {
 
     consistency_policy {
         consistency_level       = "BoundedStaleness"
-        max_interval_in_seconds = 10
-        max_staleness_prefix    = 200
+        max_interval_in_seconds = 301
+        max_staleness_prefix    = 100001
     }
 
     geo_location {
-        location          = "East US"
+        location          = "West US"
         failover_priority = 1
     }
 
@@ -99,7 +99,7 @@ resource "azurerm_cosmosdb_account" "cosmos-db" {
 
 # Azure Functions
 resource "azurerm_storage_account" "functionsa-demo" {
-  name                     = "functionsa"
+  name                     = "functionsa${random_integer.ri.result}"
   resource_group_name      = "${azurerm_resource_group.rg.name}"
   location                 = "${azurerm_resource_group.rg.location}"
   account_tier             = "Standard"

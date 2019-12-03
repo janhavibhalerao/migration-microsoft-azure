@@ -1,18 +1,18 @@
 # Create a resource group
-resource "azurerm_resource_group" "demo" {
-  name     = "production"
-  location = var.azurerm_location
+resource "azurerm_resource_group" "rg" {
+  name     = "demorg"
+  location = "${var.azurerm_location}"
 
   tags = {
     environment = "Production"
   }
 }
 
-resource "azurerm_virtual_network" "main" {
-  name = var.virtual_network_name
-  resource_group_name = azurerm_resource_group.demo.name
-  location = azurerm_resource_group.demo.location
-  address_space = [var.add_space]
+resource "azurerm_virtual_network" "vn" {
+  name = "${var.virtual_network_name}"
+  resource_group_name = azurerm_resource_group.rg.name
+  location = azurerm_resource_group.rg.location
+  address_space = ["${var.add_space}"]
   #dns_servers = ["10.0.0.4", "10.0.0.5"]
 
   tags = {
@@ -21,30 +21,30 @@ resource "azurerm_virtual_network" "main" {
 }
 
 resource "azurerm_subnet" "subnet1" {
-  name = "subnet1-var.virtual_network_name"
-  resource_group_name = azurerm_resource_group.demo.name
-  virtual_network_name = var.virtual_network_name
-  address_prefix = var.subnet1_add_prefix
+  name = "subnet1-name"
+  resource_group_name = "${azurerm_resource_group.rg.name}"
+  virtual_network_name = "${azurerm_virtual_network.vn.name}"
+  address_prefix = "${var.subnet1_add_prefix}"
 }
 
 resource "azurerm_subnet" "subnet2" {
-  name = "subnet2-var.virtual_network_name"
-  resource_group_name = azurerm_resource_group.demo.name
-  virtual_network_name = var.virtual_network_name
-  address_prefix = var.subnet2_add_prefix
+  name = "subnet2-name"
+  resource_group_name = "${azurerm_resource_group.rg.name}"
+  virtual_network_name = "${azurerm_virtual_network.vn.name}"
+  address_prefix = "${var.subnet2_add_prefix}"
 }
 
 resource "azurerm_subnet" "subnet3" {
-  name = "subnet3-var.virtual_network_name"
-  resource_group_name = azurerm_resource_group.demo.name
-  virtual_network_name = var.virtual_network_name
-  address_prefix = var.subnet3_add_prefix
+  name = "subnet3-name"
+  resource_group_name = "${azurerm_resource_group.rg.name}"
+  virtual_network_name = "${azurerm_virtual_network.vn.name}"
+  address_prefix = "${var.subnet3_add_prefix}"
 }
 
 resource "azurerm_route_table" "public_rt" {
   name = "routeTable"
-  resource_group_name = azurerm_resource_group.demo.name
-  location = azurerm_resource_group.demo.location
+  resource_group_name = azurerm_resource_group.rg.name
+  location = azurerm_resource_group.rg.location
 
   tags = {
     Name = "routeTable"
@@ -53,7 +53,7 @@ resource "azurerm_route_table" "public_rt" {
 
 resource "azurerm_route" "route" {
   name = "route1"
-  resource_group_name = azurerm_resource_group.demo.name
+  resource_group_name = azurerm_resource_group.rg.name
   route_table_name = azurerm_route_table.public_rt.name
   address_prefix = "10.1.0.0/16"
   next_hop_type = "VnetLocal"
@@ -76,42 +76,30 @@ resource "azurerm_subnet_route_table_association" "subnet3_route_table" {
 
 resource "azurerm_network_interface" "network_interface" {
   name = "networkInterface1"
-  resource_group_name = azurerm_resource_group.demo.name
-  location = azurerm_resource_group.demo.location
+  resource_group_name = azurerm_resource_group.rg.name
+  location = azurerm_resource_group.rg.location
 
   ip_configuration {
     name = "testconfiguration1"
     subnet_id = azurerm_subnet.subnet1.id
     private_ip_address_allocation = "Dynamic"
+    primary = true
   }
-
-  ip_configuration {
-    name = "testconfiguration2"
-    subnet_id = azurerm_subnet.subnet2.id
-    private_ip_address_allocation = "Dynamic"
-  }
-
-  ip_configuration {
-    name = "testconfiguration3"
-    subnet_id = azurerm_subnet.subnet3.id
-    private_ip_address_allocation = "Dynamic"
-  }
-
   tags = {
     environment = "staging"
   }
 }
 
 output "resource_group_name" {
-  value = azurerm_resource_group.demo.name
+  value = azurerm_resource_group.rg.name
 }
 
 output "resource_group_location" {
-  value = azurerm_resource_group.demo.location
+  value = azurerm_resource_group.rg.location
 }
 
 output "vn_id" {
-  value = azurerm_virtual_network.main.id
+  value = azurerm_virtual_network.vn.id
 }
 
 output "subnet_id1" {
