@@ -13,6 +13,8 @@ module "networking" {
 }
 module "application"{
    source = "../modules/application"
+   subnet_id1 = "${module.networking.subnet_id1}"
    rg_name = "${module.networking.rg_name}"
    rg_location = "${module.networking.rg_location}"
+   rg_id = "${module.networking.rg_id}"
 }
