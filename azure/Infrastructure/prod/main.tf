@@ -13,4 +13,6 @@ module "networking" {
 }
 module "application"{
    source = "../modules/application"
+   rg_name = "${module.networking.rg_name}"
+   rg_location = "${module.networking.rg_location}"
 }

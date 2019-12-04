@@ -1,5 +1,9 @@
-variable "azurerm_location" {
-    description = "Enter azurerm_location. Example (East US) "
+variable "rg_name" {
+    description = "Enter resource group"
     type = string
-    default = "East US"
+}
+
+variable "rg_location" {
+    description = "Enter resource group location. Example (East US)"
+    type = string
 }
