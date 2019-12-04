@@ -11,7 +11,7 @@ resource "azurerm_virtual_network" "vn" {
 }
 
 resource "azurerm_subnet" "subnet1" {
-  name = "AzureFirewallSubnet"
+   name = "AzureFirewallSubnet"
   resource_group_name = "${azurerm_resource_group.rg.name}"
   virtual_network_name = "${azurerm_virtual_network.vn.name}"
   address_prefix = "${var.subnet1_add_prefix}"
@@ -31,24 +31,41 @@ resource "azurerm_subnet" "subnet3" {
   address_prefix = "${var.subnet3_add_prefix}"
 }
 
+resource "azurerm_route_table" "public_rt" {
+  name = "routeTable"
+  resource_group_name = "${azurerm_resource_group.rg.name}"
+  location = "${azurerm_resource_group.rg.location}"
+}
+
+resource "azurerm_route" "route" {
+  name = "route1"
+  resource_group_name = azurerm_resource_group.rg.name
+  route_table_name = azurerm_route_table.public_rt.name
+  address_prefix = "10.1.0.0/16"
+  next_hop_type = "VnetLocal"
+}
+
+resource "azurerm_subnet_route_table_association" "subnet1_route_table" {
+  subnet_id = azurerm_subnet.subnet1.id
+  route_table_id = azurerm_route_table.public_rt.id
+}
+
+resource "azurerm_subnet_route_table_association" "subnet2_route_table" {
+  subnet_id = azurerm_subnet.subnet2.id
+  route_table_id = azurerm_route_table.public_rt.id
+}
+
+resource "azurerm_subnet_route_table_association" "subnet3_route_table" {
+  subnet_id = azurerm_subnet.subnet3.id
+  route_table_id = azurerm_route_table.public_rt.id
+}
+
 resource "azurerm_public_ip" "webapp-pip" {
   name                = "${var.prefix}-ip"
   location            = "${azurerm_resource_group.rg.location}"
   resource_group_name = "${azurerm_resource_group.rg.name}"
   allocation_method   = "Static"
   sku                 = "Standard"
-}
-
-resource "azurerm_firewall" "webapp-firewall" {
-  name                = "testfirewall"
-  location            = "${azurerm_resource_group.rg.location}"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
-
-  ip_configuration {
-    name                 = "configuration"
-    subnet_id            = "${azurerm_subnet.subnet1.id}"
-    public_ip_address_id = "${azurerm_public_ip.webapp-pip.id}"
-  }
 }
 
 resource "azurerm_network_security_group" "webapp-sg" {
@@ -141,6 +158,43 @@ resource "azurerm_virtual_machine" "webapp-vm" {
   }
 }
 
+resource "azurerm_firewall" "webapp-firewall" {
+  name                = "testfirewall"
+  location            = "${azurerm_resource_group.rg.location}"
+  resource_group_name = "${azurerm_resource_group.rg.name}"
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = "${azurerm_subnet.subnet1.id}"
+    public_ip_address_id = "${azurerm_public_ip.webapp-pip.id}"
+  }
+}
+
+resource "azurerm_firewall_application_rule_collection" "webapp-firewall-rules" {
+  name                = "testcollection"
+  azure_firewall_name = "${azurerm_firewall.webapp-firewall.name}"
+  resource_group_name = "${azurerm_resource_group.rg.name}"
+  priority            = 100
+  action              = "Allow"
+
+  rule {
+    name = "testrule"
+
+    source_addresses = [
+      "10.0.0.0/16",
+    ]
+
+    target_fqdns = [
+      "*.google.com",
+    ]
+
+    protocol {
+      port = "443"
+      type = "Https"
+    }
+  }
+}
+
 resource "azurerm_public_ip" "webapp-pip-lb" {
   name                = "${var.prefix}-ip-lb"
   location            = "${azurerm_resource_group.rg.location}"
@@ -191,35 +245,6 @@ resource "azurerm_lb_rule" "azlb-rule" {
   enable_floating_ip             = "true"
   probe_id                       = "${azurerm_lb_probe.azlb-probe.id}"
   depends_on                     = ["azurerm_lb_probe.azlb-probe"]
-}
-
-resource "azurerm_route_table" "public_rt" {
-  name = "routeTable"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
-  location = "${azurerm_resource_group.rg.location}"
-}
-
-resource "azurerm_route" "route" {
-  name = "route1"
-  resource_group_name = azurerm_resource_group.rg.name
-  route_table_name = azurerm_route_table.public_rt.name
-  address_prefix = "10.1.0.0/16"
-  next_hop_type = "VnetLocal"
-}
-
-resource "azurerm_subnet_route_table_association" "subnet1_route_table" {
-  subnet_id = azurerm_subnet.subnet1.id
-  route_table_id = azurerm_route_table.public_rt.id
-}
-
-resource "azurerm_subnet_route_table_association" "subnet2_route_table" {
-  subnet_id = azurerm_subnet.subnet2.id
-  route_table_id = azurerm_route_table.public_rt.id
-}
-
-resource "azurerm_subnet_route_table_association" "subnet3_route_table" {
-  subnet_id = azurerm_subnet.subnet3.id
-  route_table_id = azurerm_route_table.public_rt.id
 }
 
 output "rg_name" {
