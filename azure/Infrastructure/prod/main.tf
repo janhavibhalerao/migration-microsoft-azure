@@ -1,5 +1,5 @@
 provider "azurerm" {
-  #version = "=1.36.0"
+  version = "=1.36.0"
 }
 
 module "networking" {
@@ -13,6 +13,8 @@ module "networking" {
 }
 module "application"{
    source = "../modules/application"
+   subnet_id1 = "${module.networking.subnet_id1}"
    rg_name = "${module.networking.rg_name}"
    rg_location = "${module.networking.rg_location}"
+   rg_id = "${module.networking.rg_id}"
 }

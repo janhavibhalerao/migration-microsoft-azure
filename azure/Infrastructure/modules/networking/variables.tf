@@ -69,12 +69,12 @@ variable "image_version" {
   default     = "latest"
 }
 
-variable "admin_username" {
-  description = "Administrator user name"
-  default     = "adminuser"
-}
+// variable "admin_username" {
+//   description = "Administrator user name"
+//   default     = "adminuser"
+// }
 
-variable "admin_password" {
-  description = "Administrator password"
-  default     = "Adminpassword123!"
-}
+// variable "admin_password" {
+//   description = "Administrator password"
+//   default     = "Adminpassword123!"
+// }
