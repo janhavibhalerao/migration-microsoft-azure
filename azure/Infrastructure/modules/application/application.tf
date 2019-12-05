@@ -413,9 +413,9 @@ resource "azurerm_eventgrid_topic" "egt"{
 }
 
 resource "azurerm_eventgrid_event_subscription" "egs" {
-  name = "evengrid_subscription"
+  name = "eventgridSubscription"
   scope = "${var.rg_id}"
-  topic_name = "${azurerm_eventgrid_topic.egt.name}"
+  #topic_name = "${azurerm_eventgrid_topic.egt.name}"
 
   storage_queue_endpoint {
     storage_account_id = "${azurerm_storage_account.sae.id}"
@@ -423,6 +423,102 @@ resource "azurerm_eventgrid_event_subscription" "egs" {
   }
 }
 
+
+data "azurerm_subscription" "primary" {}
+
+data "azurerm_client_config" "example" {}
+
+resource "azurerm_role_definition" "adminRole"{
+  name = "my-custom-role"
+  scope = "${data.azurerm_subscription.primary.id}"
+  description = "Administrative Role with all access"
+
+  permissions {
+    actions = ["*"]
+    not_actions = []
+  }
+
+  assignable_scopes = ["${data.azurerm_subscription.primary.id}"]
+} 
+
+#resource "azurerm_role_assignment" "adminRA" {
+# name = "my-custom-role-assignment"
+#  scope = "${data.azurerm_subscription.primary.id}"
+#  role_definition_id = "${azurerm_role_definition.adminRole.id}"
+#  principal_id = "${data.azurerm_client_config.example.client_id}"
+#}
+
+
+resource "azurerm_role_definition" "DBadminRole"{
+  name = "my-custom-db-role"
+  scope = "${data.azurerm_subscription.primary.id}"
+  description = "Administrative Role with all access"
+
+  permissions {
+    actions = ["Microsoft.DBforMySQL/servers/queryTexts/action","Microsoft.DBforMySQL/servers/databases/delete" , "Microsoft.DBforMySQL/servers/configurations/write"]
+    not_actions = ["Microsoft.Resources/subscriptions/resourceGroups/delete"]
+  }
+
+  assignable_scopes = ["${data.azurerm_subscription.primary.id}"]
+} 
+
+#resource "azurerm_role_assignment" "DBadminRA" {
+#  name = "my-custom-DB-role-assignment"
+#  scope = "${data.azurerm_subscription.primary.id}"
+#  role_definition_id = "${azurerm_role_definition.DBadminRole.id}"
+#  principal_id = "${data.azurerm_client_config.example.client_id}"
+#}
+
+
+resource "azurerm_policy_definition" "policy" {
+  name         = "my-policy-definition"
+  policy_type  = "Custom"
+  mode         = "All"
+  display_name = "my-policy-definition"
+
+  policy_rule = <<POLICY_RULE
+    {
+    "if": {
+      "not": {
+        "field": "location",
+        "in": "[parameters('allowedLocations')]"
+      }
+    },
+    "then": {
+      "effect": "audit"
+    }
+  }
+POLICY_RULE
+
+  parameters = <<PARAMETERS
+    {
+    "allowedLocations": {
+      "type": "Array",
+      "metadata": {
+        "description": "The list of allowed locations for resources.",
+        "displayName": "Allowed locations",
+        "strongType": "location"
+      }
+    }
+  }
+PARAMETERS
+}
+
+resource "azurerm_policy_assignment" "policyAssignment" {
+  name                 = "policy-assignment"
+  scope                = "${var.rg_id}"
+  policy_definition_id = "${azurerm_policy_definition.policy.id}"
+  description          = "Policy Assignment created via an Acceptance Test"
+  display_name         = "My Example Policy Assignment"
+
+  parameters = <<PARAMETERS
+{
+  "allowedLocations": {
+    "value": [ "East US" ]
+  }
+}
+PARAMETERS
+}
 
 // resource "azurerm_network_interface" "webapp-nic" {
 //   name = "${var.prefix}-nic"
