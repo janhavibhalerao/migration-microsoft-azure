@@ -122,7 +122,7 @@ resource "azurerm_app_service_plan" "asp" {
 }
 
 resource "azurerm_function_app" "function" {
-  name                      = "csye6225-projectfunc"
+  name                      = "${var.dmName}-projectfunc"
   location                  = "${var.rg_location}"
   resource_group_name       = "${var.rg_name}"
   app_service_plan_id       = "${azurerm_app_service_plan.asp.id}"
@@ -221,7 +221,7 @@ resource "azurerm_app_service_plan" "asp1"{
 }
 
 resource "azurerm_app_service" "as"{
-  name = "csye6225-appService"
+  name = "${var.dmName}-appService"
   location = "${var.rg_location}"
   resource_group_name = "${var.rg_name}"
   app_service_plan_id = "${azurerm_app_service_plan.asp1.id}"
@@ -403,7 +403,7 @@ resource "azurerm_storage_queue" "sq" {
 }
 
 resource "azurerm_eventgrid_topic" "egt"{
-  name = "csye6225-eventgrid-topic"
+  name = "${var.dmName}-eventgrid-topic"
   location            = "${var.rg_location}"
   resource_group_name = "${var.rg_name}"
 

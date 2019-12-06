@@ -78,3 +78,8 @@ variable "admin_password" {
   description = "Administrator password"
   default     = "Adminpassword123!"
 }
+
+variable "dmName" {
+  description = "Enter your domain name"
+  type = string
+}
