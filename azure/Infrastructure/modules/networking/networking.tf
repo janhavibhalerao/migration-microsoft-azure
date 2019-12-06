@@ -31,35 +31,6 @@ resource "azurerm_subnet" "AzureFirewallSubnet" {
   address_prefix = "${var.subnet3_add_prefix}"
 }
 
-resource "azurerm_route_table" "public_rt" {
-  name = "routeTable"
-  resource_group_name = "${azurerm_resource_group.rg.name}"
-  location = "${azurerm_resource_group.rg.location}"
-}
-
-resource "azurerm_route" "route" {
-  name = "route1"
-  resource_group_name = azurerm_resource_group.rg.name
-  route_table_name = azurerm_route_table.public_rt.name
-  address_prefix = "10.1.0.0/16"
-  next_hop_type = "VnetLocal"
-}
-
-resource "azurerm_subnet_route_table_association" "subnet1_route_table" {
-  subnet_id = azurerm_subnet.subnet1.id
-  route_table_id = azurerm_route_table.public_rt.id
-}
-
-resource "azurerm_subnet_route_table_association" "subnet2_route_table" {
-  subnet_id = azurerm_subnet.subnet2.id
-  route_table_id = azurerm_route_table.public_rt.id
-}
-
-resource "azurerm_subnet_route_table_association" "subnet3_route_table" {
-  subnet_id = azurerm_subnet.subnet3.id
-  route_table_id = azurerm_route_table.public_rt.id
-}
-
 resource "azurerm_public_ip" "webapp-pip" {
   name                = "${var.prefix}-ip"
   location            = "${azurerm_resource_group.rg.location}"
