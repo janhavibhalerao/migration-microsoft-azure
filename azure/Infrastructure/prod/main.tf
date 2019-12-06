@@ -17,4 +17,5 @@ module "application"{
    rg_name = "${module.networking.rg_name}"
    rg_location = "${module.networking.rg_location}"
    rg_id = "${module.networking.rg_id}"
+   dmName = "${var.dmName}"
 }
